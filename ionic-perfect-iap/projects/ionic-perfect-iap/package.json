@@ -1,0 +1,13 @@
+{
+  "name": "ionic-perfect-iap",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^9.1.11",
+    "@angular/core": "^9.1.11",
+    "@ionic-native/core": "^5.27.0",
+    "@ionic-native/in-app-purchase-2": "^5.27.0"
+  },
+  "dependencies": {
+    "tslib": "^1.10.0"
+  }
+}
