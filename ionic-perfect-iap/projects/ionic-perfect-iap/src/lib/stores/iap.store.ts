@@ -14,7 +14,7 @@ export class IAPStore implements IStore {
       });
 
       try {
-        this.store.register({ id, type, });
+        this.store.register({ id, type });
       }
       catch (err) {
         reject(err);

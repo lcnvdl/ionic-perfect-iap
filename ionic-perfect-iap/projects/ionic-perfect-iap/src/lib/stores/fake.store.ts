@@ -21,7 +21,7 @@ export class FakeStore implements IStore {
   private initialList = [];
   private verifiedList = [];
 
-  constructor(public testingProducts: any[], public purchased: string[] = []) {
+  constructor(public testingProducts: any[], public purchased: string[] = [], public verbose = true) {
     this.initialList.push(...purchased);
   }
 
@@ -30,10 +30,11 @@ export class FakeStore implements IStore {
 
     return runAsync<IAPProduct>(() => {
       if (!product) {
-        return Promise.resolve(null);
+        this.verbose && console.warn("The product " + id + " doesn't exists");
+        return null;
       }
       else {
-        return Promise.resolve(product);
+        return product;
       }
     });
   }
@@ -43,10 +44,12 @@ export class FakeStore implements IStore {
       const result = confirm("Do you want to buy?");
       if (result) {
         this.purchased.push(id);
-        resolve({} as any);
+        const product = this.getIndividualProduct(id);
+        product.owned = true;
+        resolve(product);
       }
       else {
-        reject("Cancelled");
+        resolve();
       }
     });
   }
@@ -58,7 +61,10 @@ export class FakeStore implements IStore {
   owned(id: string): Observable<IAPProduct> {
     return new Observable(observer => {
       if (this.initialList.some(m => m === id)) {
-        observer.next({ id } as any);
+        const product = this.getIndividualProduct(id);
+        product.owned = true;
+        this.verbose && console.log("Owned", product);
+        observer.next(product);
         observer.complete();
       }
     });
@@ -68,14 +74,15 @@ export class FakeStore implements IStore {
     return new Observable(observer => {
       const interval = setInterval(() => {
         if (this.purchased.some(m => m === id)) {
-          observer.next({
-            id,
-            verify: () => {
-              this.verifiedList.push(id);
-            }
-          } as any);
-          observer.complete();
           clearInterval(interval);
+          const product = this.getIndividualProduct(id);
+          product.owned = true;
+          product.verify = () => {
+            this.verifiedList.push(id);
+          };
+          this.verbose && console.log("Approved", product);
+          observer.next(product);
+          observer.complete();
         }
       }, 100);
     });
@@ -85,14 +92,24 @@ export class FakeStore implements IStore {
     return new Observable(observer => {
       const interval = setInterval(() => {
         if (this.verifiedList.some(m => m === id)) {
-          observer.next({ id } as any);
-          observer.complete();
           clearInterval(interval);
+          const product = this.getIndividualProduct(id);
+          product.owned = true;
+          product.finish = () => { };
+          this.verbose && console.log("Verified", product);
+          observer.next(product);
+          observer.complete();
         }
       }, 100);
     });
   }
 
   refresh() {
+    this.verbose && console.log("Refresh");
+  }
+
+  private getIndividualProduct(id: string) {
+    const product = JSON.parse(JSON.stringify(this.testingProducts.find(m => m.id === id)));
+    return product;
   }
 }

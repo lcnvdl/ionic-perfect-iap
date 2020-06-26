@@ -1,0 +1,7 @@
+{
+  "name": "ionic-perfect-iap-example",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}
